@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "184407385618",
+    "firebase_url": "https://mamanike-d4d52-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "mamanike-d4d52",
+    "storage_bucket": "mamanike-d4d52.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:184407385618:android:c2a88a7835033109aedacb",
+        "android_client_info": {
+          "package_name": "com.app.mamanike.mamanike"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "184407385618-ba0ngovbfjnhe7aorom18gis2lp2iuu7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDa2npH9Lm0XBYKqV5l6s6GxuiLYJ_ZZPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "184407385618-ba0ngovbfjnhe7aorom18gis2lp2iuu7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:184407385618:android:90b25cf59086c909aedacb",
+        "android_client_info": {
+          "package_name": "id.chrosanc.MamanikeAdmin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "184407385618-ba0ngovbfjnhe7aorom18gis2lp2iuu7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDa2npH9Lm0XBYKqV5l6s6GxuiLYJ_ZZPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "184407385618-ba0ngovbfjnhe7aorom18gis2lp2iuu7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:184407385618:android:7f493fa9027f0911aedacb",
+        "android_client_info": {
+          "package_name": "id.chrosanc.mamanike"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "184407385618-ba0ngovbfjnhe7aorom18gis2lp2iuu7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDa2npH9Lm0XBYKqV5l6s6GxuiLYJ_ZZPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "184407385618-ba0ngovbfjnhe7aorom18gis2lp2iuu7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
