@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp( 
       title: 'Mamanike',
       theme: ThemeData(
-        useMaterial3: true,
+        useMaterial3: false,
       ),
       home: const Splash(),
       debugShowCheckedModeBanner: false,

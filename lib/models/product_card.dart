@@ -1,55 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mamanike/screens/main/product/detail_screen.dart';
 
-class RecommendationCard extends StatelessWidget {
-  final Map<String, dynamic> data;
+class ProductCard extends StatelessWidget {
+  final Map<String, dynamic>? data;
 
-  const RecommendationCard({Key? key, required this.data}) : super(key: key);
+  const ProductCard({Key? key, this.data}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      child: Container(
-        width: 150,
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: data['gambar'] != null
-                  ? Image.network(data['gambar'], fit: BoxFit.cover)
-                  : Container(color: Colors.grey),
+    if (data == null || data!['gambar'] == null || data!['nama'] == null || data!['stok'] == null || data!['harga'] == null) {
+      return SizedBox.shrink(); // Return an empty widget if any data is null
+    }
+
+    final String imageUrl = data!['gambar'] as String;
+    final String name = data!['nama'] as String;
+    final int stock = data!['stok'] as int;
+    final int price = data!['harga'] as int;
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => DetailScreen(data : data!)));
+      },
+      child: AspectRatio(
+        aspectRatio: 148 / 205,
+        child: Card(
+          shadowColor: Colors.black,
+          elevation: 5,
+          color: Colors.white,
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Container(
+            padding: EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  alignment: Alignment.center,
+                  height: 74,
+                  width: 124,
+                  child: Image.network(imageUrl, fit: BoxFit.cover),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.start,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '$stock Tersedia',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey,
+                  ),
+                  textAlign: TextAlign.start,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Rp$price /bulan',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.orange,
+                  ),
+                  textAlign: TextAlign.start,
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              data['nama'],
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${data['stok']} Tersedia',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Rp${data['harga']}/bulan',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.orange,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

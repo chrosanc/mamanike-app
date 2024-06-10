@@ -7,7 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
 import 'package:mamanike/screens/auth/register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mamanike/screens/home/home_screen.dart';
+import 'package:mamanike/screens/main/home/home_screen.dart';
+import 'package:mamanike/models/navigation.dart';
+import 'package:mamanike/screens/main/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -35,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainScreen()));
         CherryToast.success(
           title: const Text("Login Berhasil"),
           animationType: AnimationType.fromTop,
