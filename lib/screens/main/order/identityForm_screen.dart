@@ -45,7 +45,7 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
   Future<void> _pickImage() async {
     try {
       final ImagePicker _picker = ImagePicker();
-      final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
       setState(() {
         _image = image;
       });

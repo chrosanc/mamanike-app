@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mamanike/models/CustomForms.dart';
 import 'package:mamanike/models/button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void showCustomBottomSheet({
   required BuildContext context,
@@ -277,6 +278,13 @@ void showCustomDatePicker({
   );
 }
 
+_launchURL() async {
+  final Uri uri = Uri.parse('https://maps.app.goo.gl/13Ly1S5yQ86tPcWZ6');
+  if(!await launchUrl(uri)){
+    throw Exception('error opening maps $uri');
+  }
+}
+
  void showDeliveryOptionsModal({
   required BuildContext context,
   required String? selectedDeliveryType,
@@ -407,9 +415,7 @@ void showCustomDatePicker({
                               elevation: 0,
                             
                             ),
-                            onPressed: (){
-                            
-                            },
+                            onPressed: _launchURL,
                             child: Text(
                               "Lihat di Google Maps",
                               style: GoogleFonts.poppins(
@@ -418,8 +424,9 @@ void showCustomDatePicker({
                                 fontSize: 12.0,
                               ),
                             ),
-                                                    ),
+                            ),
                           ),
+                          const SizedBox(height: 24),
                           Divider(),
                           RadioListTile(
                             activeColor: const Color(0xFFFFB113),
