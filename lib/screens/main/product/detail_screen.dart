@@ -36,7 +36,6 @@ class _DetailScreenState extends State<DetailScreen> {
                     children: [
                       _productImage(context, imageUrl),
                       _header(productName, price, stock),
-                      Text(categoryName),
                       const Divider(color: Colors.grey, thickness: 1,),
                       const SizedBox(height: 24,),
                       Container(

@@ -3,10 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 
 class CategoryCard extends StatelessWidget {
   final Map<String, dynamic> data;
-
+  final Function()? onTap;
   const CategoryCard({
     Key? key,
     required this.data,
+    required this.onTap
   }) : super(key: key);
 
   @override
@@ -21,30 +22,33 @@ class CategoryCard extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                child: data['gambar'] != null
-                    ? Image.network(data['gambar'], fit: BoxFit.cover, width: double.infinity, height: double.infinity)
-                    : Container(color: Colors.grey),
-              ),
-              Positioned(
-                bottom: 8,
-                left: 8,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 0, 22),
-                  child: Text(
-                    data['nama_kategori'],
-                    style: GoogleFonts.poppins(
-                      fontSize: 22,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+          child: GestureDetector(
+            onTap: onTap,
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  child: data['gambar'] != null
+                      ? Image.network(data['gambar'], fit: BoxFit.cover, width: double.infinity, height: double.infinity)
+                      : Container(color: Colors.grey),
+                ),
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 0, 22),
+                    child: Text(
+                      data['nama_kategori'],
+                      style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

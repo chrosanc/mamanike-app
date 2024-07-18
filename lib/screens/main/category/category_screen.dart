@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mamanike/models/category_card.dart';
+import 'package:mamanike/screens/main/category/productlist_screen.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({ Key? key }) : super(key: key);
@@ -13,6 +14,7 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
+
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +77,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
             scrollDirection: Axis.vertical,
             children: snapshot.data!.docs.map((DocumentSnapshot document){
                   Map<String, dynamic> itemData = document.data() as Map<String, dynamic>;
-                  return CategoryCard(data: itemData,);
+                  return CategoryCard(data: itemData, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                     ProductlistScreen(data: itemData)
+                    ));
+                  },);
             }).toList(),
           ),
         );

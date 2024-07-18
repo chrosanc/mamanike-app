@@ -1,15 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mamanike/screens/auth/login_screen.dart';
+import 'package:mamanike/screens/main/order/address_screen.dart';
+import 'package:mamanike/service/database_service.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({ Key? key }) : super(key: key);
+
+  
 
   @override
   _OrderScreenState createState() => _OrderScreenState();
 }
 
+
+
 class _OrderScreenState extends State<AccountScreen> {
+
+  String _name = "Nama";
+  String _email = "email@gmail.com";
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserData();
+  }
+
+    Future<void> _getUserData() async {
+    DatabaseService dbService = DatabaseService();
+    Map<String, dynamic>? userData = await dbService.getUserData();
+    if (userData != null) {
+      setState(() {
+        _name = userData['full_name'] ?? 'Nama';
+        _email = userData['email'] ?? 'email@gmail.com';
+      });
+    }
+  }
+
+signOut(BuildContext context) async {
+  await DatabaseService().signOut();
+  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => LoginScreen()), (route) => false);
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,26 +85,29 @@ class _OrderScreenState extends State<AccountScreen> {
           ),
           child: Column(
       children: [        
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Keluar",
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
-                    ),
-                  ),                
-                ],
+        GestureDetector(
+          onTap: () {signOut(context);},
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Keluar",
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                    ),                
+                  ],
+                ),
               ),
-            ),
-            SvgPicture.asset('assets/svg/arrow_right.svg'),
-        
-            const SizedBox(height: 24,),                       
-          ],
+              SvgPicture.asset('assets/svg/arrow_right.svg'),
+          
+              const SizedBox(height: 24,),                       
+            ],
+          ),
         ),        
       ],
           ),
@@ -203,35 +238,40 @@ child: Container(
       ),
       
       const SizedBox(height: 24,),
-      Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Alamat",
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
+      GestureDetector(
+        onTap: (){
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> AddressScreen()));
+        },
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Alamat",
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-                Text(
-                  "Buat atau ubah alamat",
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.normal,
-                    fontSize: 11,
+                  Text(
+                    "Buat atau ubah alamat",
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.normal,
+                      fontSize: 11,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SvgPicture.asset('assets/svg/arrow_right.svg'),
-      
-          const SizedBox(height: 24,),
-      
-          
-        ],
+            SvgPicture.asset('assets/svg/arrow_right.svg'),
+        
+            const SizedBox(height: 24,),
+        
+            
+          ],
+        ),
       ),
 
 
@@ -327,17 +367,18 @@ child: Container(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                       Text(
-                        "Nama",
+                        _name,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                          fontSize: 14,
+                          
                         ),
                         ),
                       Text(
-                        "email@gmail.com",
+                        _email,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.normal,
-                          fontSize: 14
+                          fontSize: 12
                         ),
                         )
                     ],),

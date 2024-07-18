@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mamanike/models/CustomForms.dart';
-import 'package:mamanike/models/backbutton.dart';
 import 'package:mamanike/models/button.dart';
 
 class IdentityFormScreen extends StatefulWidget {
@@ -45,7 +44,7 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
   Future<void> _pickImage() async {
     try {
       final ImagePicker _picker = ImagePicker();
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      final XFile? image = await _picker.pickImage(source: ImageSource.camera);
       setState(() {
         _image = image;
       });
@@ -91,21 +90,18 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
         backgroundColor: Colors.white,
         toolbarHeight: 76,
         elevation: 1,
-        leadingWidth: 100,
-        leading: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 19),
-          width: 34,
-          height: 34,
-          child: const CustomBackbutton(),
-        ),
+        automaticallyImplyLeading: false,
         title: Text(
           'Identitas',
-          textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w600,
             color: const Color(0xFFFFB113),
           ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.orange),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: Column(

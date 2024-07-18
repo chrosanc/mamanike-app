@@ -69,6 +69,8 @@ Future<void> _register() async {
         await _firestore.collection('users').doc(userCredential.user!.uid).set(
           {
             'full_name': _nameController.text,
+            'email' : _emailController.text,
+            'fcmToken' : ''
           }
         );
        if (userCredential.user != null) {

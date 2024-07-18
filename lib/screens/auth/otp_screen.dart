@@ -37,7 +37,8 @@ class OtpscreenState extends State<Otpscreen> {
 
   void _startResendCountdown() {
     const oneSecond = Duration(seconds: 1);
-    _resendTimer = Timer.periodic(oneSecond, (timer) {
+    setState(() {
+      _resendTimer = Timer.periodic(oneSecond, (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -57,6 +58,8 @@ class OtpscreenState extends State<Otpscreen> {
         }
       }
     });
+    });
+    
   }
 
   @override
@@ -104,6 +107,9 @@ class OtpscreenState extends State<Otpscreen> {
       );
 
       await widget.user.updatePhoneNumber(credential);
+      setState(() {
+        _resendTimer!.cancel();
+      });
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const SuccessScreen()),

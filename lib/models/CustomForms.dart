@@ -5,10 +5,11 @@ class CustomForms extends StatelessWidget {
 
   final String title;
   final TextEditingController controller;
-  final Function(String) onChanged;
+  final Function(String)? onChanged;
   final String? hintText;
+  final TextInputType? keyboardType;
 
-const CustomForms({ Key? key, required this.title, required this.controller , required this.onChanged, this.hintText}) : super(key: key);
+const CustomForms({ Key? key, required this.title, required this.controller , this.onChanged, this.hintText, this.keyboardType}) : super(key: key);
 
   @override
   Widget build(BuildContext context){
@@ -24,7 +25,6 @@ const CustomForms({ Key? key, required this.title, required this.controller , re
                   ),
                   ),
                   
-              const  SizedBox(height: 12,),
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                 decoration: BoxDecoration(
@@ -35,6 +35,7 @@ const CustomForms({ Key? key, required this.title, required this.controller , re
                 child: TextFormField(
                   onChanged: onChanged,
                   controller: controller,
+                  keyboardType: keyboardType,
                   decoration: InputDecoration(
                     hintText: hintText,
                     border: InputBorder.none,

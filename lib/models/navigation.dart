@@ -34,9 +34,7 @@ class BottomNavBar extends StatelessWidget {
       onTap: onTap,
       items: [
         BottomNavigationBarItem(
-          icon: SvgPicture.asset('assets/svg/home.svg',
-          color: currentIndex == 0 ? const Color(0xFFFFB113) : const Color(0xFFD8D8D8),
-),
+          icon: Icon(IconlyLight.home),
           label: 'Beranda',
         ),
         BottomNavigationBarItem(

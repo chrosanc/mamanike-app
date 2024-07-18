@@ -20,25 +20,32 @@ class ProductCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => DetailScreen(data : data!)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => DetailScreen(data: data!)));
       },
       child: AspectRatio(
         aspectRatio: 148 / 205,
         child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12)
+          ),
           shadowColor: Colors.black,
           elevation: 5,
           color: Colors.white,
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Container(
-            padding: EdgeInsets.all(12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  alignment: Alignment.center,
-                  height: 74,
-                  width: 124,
-                  child: Image.network(imageUrl, fit: BoxFit.cover),
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
