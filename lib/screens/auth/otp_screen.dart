@@ -89,27 +89,33 @@ class OtpscreenState extends State<Otpscreen> {
         Navigator.push(context, MaterialPageRoute(builder: (context) => const SuccessScreen()));
       },
       verificationFailed: (FirebaseAuthException e) {
-        CherryToast.error(
-          title: Text(e.message ?? 'Verifikasi Gagal'),
-          animationType: AnimationType.fromRight,
-          animationDuration: const Duration(milliseconds: 1000),
-          autoDismiss: true,
-        ).show(context);
-        setState(() {
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          CherryToast.error(
+            title: Text(e.message ?? 'Verifikasi Gagal'),
+            animationType: AnimationType.fromRight,
+            animationDuration: const Duration(milliseconds: 1000),
+            autoDismiss: true,
+          ).show(context);
+        }
       },
       codeSent: (String verificationId, int? resendToken) {
-        setState(() {
-          _verificationId = verificationId;
-          _resendToken = resendToken;
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _verificationId = verificationId;
+            _resendToken = resendToken;
+            _isLoading = false;
+          });
+        }
       },
       codeAutoRetrievalTimeout: (String verificationId) {
-        setState(() {
-          _verificationId = verificationId;
-        });
+        if (mounted) {
+          setState(() {
+            _verificationId = verificationId;
+          });
+        }
       },
       timeout: const Duration(seconds: 60),
     );
@@ -140,16 +146,20 @@ class OtpscreenState extends State<Otpscreen> {
       if (!mounted) return;
       Navigator.push(context, MaterialPageRoute(builder: (context) => const SuccessScreen()));
     } on FirebaseAuthException catch (e) {
-      CherryToast.error(
-        title: Text(e.message ?? 'Verifikasi Gagal'),
-        animationType: AnimationType.fromRight,
-        animationDuration: const Duration(milliseconds: 1000),
-        autoDismiss: true,
-      ).show(context);
+      if (mounted) {
+        CherryToast.error(
+          title: Text(e.message ?? 'Verifikasi Gagal'),
+          animationType: AnimationType.fromRight,
+          animationDuration: const Duration(milliseconds: 1000),
+          autoDismiss: true,
+        ).show(context);
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

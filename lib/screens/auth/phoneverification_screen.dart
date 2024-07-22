@@ -36,7 +36,7 @@ class _PhoneverificationScreenState extends State<PhoneverificationScreen> {
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Otpscreen(phoneNumber: phoneNumber, user: widget.user)));
   
     } catch(e) {
-
+      print(e);
     } finally{
       setState(() {
         _isLoading = false;
