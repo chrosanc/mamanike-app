@@ -5,10 +5,10 @@
     <!-- Permission for internet access -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="mamanike"
+        android:label="Mamanike"
         tools:replace="android:label"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
 
          <receiver
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
