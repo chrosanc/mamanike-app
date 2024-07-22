@@ -37,6 +37,7 @@ class _PhoneverificationScreenState extends State<PhoneverificationScreen> {
   try {
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: phoneNumber,
+      timeout: const Duration(seconds: 60),
       verificationCompleted: (PhoneAuthCredential credential) async {
         await widget.user.updatePhoneNumber(credential);
         CherryToast.success(
@@ -54,8 +55,9 @@ class _PhoneverificationScreenState extends State<PhoneverificationScreen> {
             animationType: AnimationType.fromTop,
           ).show(context);
         } else {
+          print(e.message);
           CherryToast.error(
-            description: Text(e.message!),
+            description: Text('Error terjadi, silahkan coba lagi nanti'),
             animationType: AnimationType.fromTop,
           ).show(context);
         }

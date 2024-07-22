@@ -36,30 +36,18 @@ class OtpscreenState extends State<Otpscreen> {
   Timer? _resendTimer;
 
   void _startResendCountdown() {
+    _resendTimer?.cancel();
+    _resendCountdown = 60;
     const oneSecond = Duration(seconds: 1);
-    setState(() {
-      _resendTimer = Timer.periodic(oneSecond, (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
+    _resendTimer = Timer.periodic(oneSecond, (timer) {
       if (_resendCountdown == 0) {
         timer.cancel();
-        if (mounted) {
-          setState(() {
-            _resendCountdown = 60;
-          });
-        }
       } else {
-        if (mounted) {
-          setState(() {
-            _resendCountdown--;
-          });
-        }
+        setState(() {
+          _resendCountdown--;
+        });
       }
     });
-    });
-    
   }
 
   @override
@@ -76,9 +64,7 @@ class OtpscreenState extends State<Otpscreen> {
         _focusNodes[index].unfocus();
       }
     }
-    if (mounted) {
-      setState(() {});
-    }
+    setState(() {});
   }
 
   bool _isFormFilled() {
@@ -107,27 +93,21 @@ class OtpscreenState extends State<Otpscreen> {
       );
 
       await widget.user.updatePhoneNumber(credential);
-      setState(() {
-        _resendTimer!.cancel();
-      });
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const SuccessScreen()),
         (route) => false,
       );
     } on FirebaseAuthException catch (e) {
-      if (mounted) {
-        CherryToast.error(
-          description: Text(e.message ?? "Error occurred"),
-          animationType: AnimationType.fromTop,
-        ).show(context);
-      }
+      CherryToast.error(
+        description: Text(e.message ?? "Error occurred"),
+        animationType: AnimationType.fromTop,
+      ).show(context);
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -139,37 +119,29 @@ class OtpscreenState extends State<Otpscreen> {
           await widget.user.updatePhoneNumber(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
-          if (mounted) {
-            CherryToast.error(
-              description: Text(e.message!),
-              animationType: AnimationType.fromTop,
-            ).show(context);
-          }
+          CherryToast.error(
+            description: Text(e.message!),
+            animationType: AnimationType.fromTop,
+          ).show(context);
         },
         codeSent: (String verificationId, int? resendToken) {
-          if (mounted) {
-            setState(() {
-              _verificationId = verificationId;
-              _resendToken = resendToken;
-              _startResendCountdown();
-            });
-            CherryToast.success(
-              description: const Text("Kode verifikasi dikirim."),
-              animationType: AnimationType.fromTop,
-            ).show(context);
-          }
+          setState(() {
+            _verificationId = verificationId;
+            _resendToken = resendToken;
+          });
+          _startResendCountdown();
+          CherryToast.success(
+            description: const Text("Kode verifikasi dikirim."),
+            animationType: AnimationType.fromTop,
+          ).show(context);
         },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          
-        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
       );
     } catch (e) {
-      if (mounted) {
-        CherryToast.error(
-          description: Text(e.toString()),
-          animationType: AnimationType.fromTop,
-        ).show(context);
-      }
+      CherryToast.error(
+        description: Text(e.toString()),
+        animationType: AnimationType.fromTop,
+      ).show(context);
     }
   }
 
