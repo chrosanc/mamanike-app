@@ -34,21 +34,20 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> saveFCMToken() async {
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  String? token = await messaging.getToken();
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? token = await messaging.getToken();
 
-  if (token != null) {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-        'fcmToken': token,
-      });
+    if (token != null) {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+          'fcmToken': token,
+        });
+      }
     }
   }
-}
 
-
-Future<void> _login() async {
+  Future<void> _login() async {
     try {
       await _auth.signInWithEmailAndPassword(
         email: _emailController.text,
@@ -57,17 +56,41 @@ Future<void> _login() async {
       await saveFCMToken();
 
       final User? user = FirebaseAuth.instance.currentUser;
-      if (user != null && user.phoneNumber == null) {
-        if (mounted) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => PhoneverificationScreen(user: user)));
+      if (user != null) {
+        if (user.phoneNumber == null) {
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PhoneverificationScreen(user: user),
+              ),
+            );
+          }
+          CherryToast.success(
+            title: Text(
+              "Silahkan Verifikasi nomor telepon.",
+              style: GoogleFonts.poppins(fontSize: 12),
+            ),
+            animationType: AnimationType.fromTop,
+          ).show(context);
+        } else {
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const MainScreen()),
+            );
+          }
+          CherryToast.success(
+            title: const Text("Login Berhasil"),
+            animationType: AnimationType.fromTop,
+          ).show(context);
         }
-        CherryToast.success(
-          title: Text("Silahkan Verifikasi nomor telepon.", style: GoogleFonts.poppins(fontSize: 12),),
-          animationType: AnimationType.fromTop,
-        ).show(context);
       } else {
         if (mounted) {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainScreen()));
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
         }
         CherryToast.success(
           title: const Text("Login Berhasil"),
@@ -93,7 +116,6 @@ Future<void> _login() async {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -214,8 +236,8 @@ Future<void> _login() async {
                   ),
                   const SizedBox(height: 25),
                   GestureDetector(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> ForgotpasswordScreen()));
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotpasswordScreen()));
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 27),
@@ -256,19 +278,17 @@ Future<void> _login() async {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 120),
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      text: "Belum punya akun? ",
+                  const SizedBox(height: 20),
+                  Text.rich(
+                    TextSpan(
+                      text: 'Belum punya akun? ',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                        color: const Color(0xFF9E9E9E),
+                        fontWeight: FontWeight.w600,
                       ),
                       children: [
                         TextSpan(
-                          text: "Daftar Sekarang",
+                          text: 'Daftar',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -285,6 +305,7 @@ Future<void> _login() async {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 25),
                 ],
               ),
             ),

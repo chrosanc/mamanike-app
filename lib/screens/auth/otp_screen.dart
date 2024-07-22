@@ -37,6 +37,8 @@ class OtpscreenState extends State<Otpscreen> {
   Timer? _resendTimer;
 
   void _startResendCountdown() {
+    _resendTimer?.cancel();
+    _resendCountdown = 60;
     const oneSecond = Duration(seconds: 1);
     setState(() {
       _resendTimer = Timer.periodic(oneSecond, (timer) {
@@ -76,9 +78,7 @@ class OtpscreenState extends State<Otpscreen> {
         _focusNodes[index].unfocus();
       }
     }
-    if (mounted) {
-      setState(() {});
-    }
+    setState(() {});
   }
 
   bool _isFormFilled() {
@@ -120,11 +120,9 @@ class OtpscreenState extends State<Otpscreen> {
         ).show(context);
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -136,25 +134,21 @@ class OtpscreenState extends State<Otpscreen> {
           await widget.user.updatePhoneNumber(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
-          if (mounted) {
-            CherryToast.error(
-              description: Text(e.message!),
-              animationType: AnimationType.fromTop,
-            ).show(context);
-          }
+          CherryToast.error(
+            description: Text(e.message!),
+            animationType: AnimationType.fromTop,
+          ).show(context);
         },
         codeSent: (String verificationId, int? resendToken) {
-          if (mounted) {
-            setState(() {
-              _verificationId = verificationId;
-              _resendToken = resendToken;
-              _startResendCountdown();
-            });
-            CherryToast.success(
-              description: const Text("Kode verifikasi dikirim."),
-              animationType: AnimationType.fromTop,
-            ).show(context);
-          }
+          setState(() {
+            _verificationId = verificationId;
+            _resendToken = resendToken;
+          });
+          _startResendCountdown();
+          CherryToast.success(
+            description: const Text("Kode verifikasi dikirim."),
+            animationType: AnimationType.fromTop,
+          ).show(context);
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           if (mounted) {
@@ -167,12 +161,10 @@ class OtpscreenState extends State<Otpscreen> {
         },
       );
     } catch (e) {
-      if (mounted) {
-        CherryToast.error(
-          description: Text(e.toString()),
-          animationType: AnimationType.fromTop,
-        ).show(context);
-      }
+      CherryToast.error(
+        description: Text(e.toString()),
+        animationType: AnimationType.fromTop,
+      ).show(context);
     }
   }
 
