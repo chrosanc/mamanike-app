@@ -26,7 +26,8 @@ class Otpscreen extends StatefulWidget {
 
 class OtpscreenState extends State<Otpscreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final List<TextEditingController> _controllers = List.generate(6, (index) => TextEditingController());
+  final List<TextEditingController> _controllers =
+      List.generate(6, (index) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
 
   int _resendCountdown = 60;
@@ -39,27 +40,26 @@ class OtpscreenState extends State<Otpscreen> {
     const oneSecond = Duration(seconds: 1);
     setState(() {
       _resendTimer = Timer.periodic(oneSecond, (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      if (_resendCountdown == 0) {
-        timer.cancel();
-        if (mounted) {
-          setState(() {
-            _resendCountdown = 60;
-          });
+        if (!mounted) {
+          timer.cancel();
+          return;
         }
-      } else {
-        if (mounted) {
-          setState(() {
-            _resendCountdown--;
-          });
+        if (_resendCountdown == 0) {
+          timer.cancel();
+          if (mounted) {
+            setState(() {
+              _resendCountdown = 60;
+            });
+          }
+        } else {
+          if (mounted) {
+            setState(() {
+              _resendCountdown--;
+            });
+          }
         }
-      }
+      });
     });
-    });
-    
   }
 
   @override
@@ -101,15 +101,12 @@ class OtpscreenState extends State<Otpscreen> {
         _isLoading = true;
       });
 
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+      PhoneAuthCredential credential = await PhoneAuthProvider.credential(
         verificationId: widget.verificationId,
         smsCode: otp,
       );
 
-      await widget.user.updatePhoneNumber(credential);
-      setState(() {
-        _resendTimer!.cancel();
-      });
+      widget.user.updatePhoneNumber(credential);
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const SuccessScreen()),
@@ -118,7 +115,7 @@ class OtpscreenState extends State<Otpscreen> {
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         CherryToast.error(
-          description: Text(e.message ?? "Error occurred"),
+          description: Text("Terjadi Error, silahkan Coba Lagi."),
           animationType: AnimationType.fromTop,
         ).show(context);
       }
@@ -160,7 +157,13 @@ class OtpscreenState extends State<Otpscreen> {
           }
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          
+          if (mounted) {
+            CherryToast.error(
+              description: const Text(
+                  "Waktu verifikasi habis, silakan kirim ulang kode."),
+              animationType: AnimationType.fromTop,
+            ).show(context);
+          }
         },
       );
     } catch (e) {
@@ -210,10 +213,14 @@ class OtpscreenState extends State<Otpscreen> {
     return RichText(
       textAlign: TextAlign.start,
       text: TextSpan(
-        text: _resendCountdown == 0 ? "Kirim ulang kode" : "Kirim ulang kode ($_resendCountdown)",
+        text: _resendCountdown == 0
+            ? "Kirim ulang kode"
+            : "Kirim ulang kode ($_resendCountdown)",
         style: GoogleFonts.poppins(
           fontSize: 14,
-          color: _resendCountdown == 0 ? const Color(0xFFFFB113) : const Color(0xFF9E9E9E),
+          color: _resendCountdown == 0
+              ? const Color(0xFFFFB113)
+              : const Color(0xFF9E9E9E),
         ),
         recognizer: TapGestureRecognizer()
           ..onTap = _resendCountdown == 0 ? _sendOtp : null,
@@ -268,7 +275,8 @@ class OtpscreenState extends State<Otpscreen> {
         onPressed: _isFormFilled() ? _verifyOtp : null,
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          backgroundColor: _isFormFilled() ? const Color(0xFFFFB113) : Colors.grey,
+          backgroundColor:
+              _isFormFilled() ? const Color(0xFFFFB113) : Colors.grey,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
