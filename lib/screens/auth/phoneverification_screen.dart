@@ -21,87 +21,30 @@ class _PhoneverificationScreenState extends State<PhoneverificationScreen> {
   bool _phoneFilled = false;
   bool _isLoading = false;
 
-  String? _verificationId;
-
 
   bool _isFormFilled() {
     return _phoneFilled;
   }
 
-  void _sendOtp() async {
+  void _sendOtp() {
+    try{
   setState(() {
-    _isLoading = true;
-  });
-
-  String phoneNumber = "+62${_phoneController.text.replaceAll(" ", "")}";
-  try {
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      timeout: const Duration(seconds: 60),
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await widget.user.updatePhoneNumber(credential);
-        CherryToast.success(
-          description: const Text("Verifikasi berhasil."),
-          animationType: AnimationType.fromTop,
-        ).show(context);
-        setState(() {
-          _isLoading = false;
-        });
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        if (e.code == 'credential-already-in-use') {
-          CherryToast.error(
-            description: const Text("Nomor telepon ini sudah digunakan."),
-            animationType: AnimationType.fromTop,
-          ).show(context);
-        } else {
-          print(e.message);
-          CherryToast.error(
-            description: Text('Error terjadi, silahkan coba lagi nanti'),
-            animationType: AnimationType.fromTop,
-          ).show(context);
-        }
-        setState(() {
-          _isLoading = false;
-        });
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        setState(() {
-          _verificationId = verificationId;
-          _isLoading = false;
-        });
-        CherryToast.success(
-          description: const Text("Kode verifikasi dikirim."),
-          animationType: AnimationType.fromTop,
-        ).show(context);
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Otpscreen(
-              phoneNumber: phoneNumber,
-              user: widget.user,
-              verificationId: _verificationId!,
-            ),
-          ),
-        );
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        setState(() {
-          _verificationId = verificationId;
-        });
-      },
-    );
-  } catch (e) {
-    CherryToast.error(
-      description: Text(e.toString()),
-      animationType: AnimationType.fromTop,
-    ).show(context);
-    setState(() {
-      _isLoading = false;
+      _isLoading = true;
     });
+
+    String phoneNumber = "+62${_phoneController.text.replaceAll(" ", "")}";
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Otpscreen(phoneNumber: phoneNumber, user: widget.user)));
+  
+    } catch(e) {
+
+    } finally{
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  
   }
-}
+
 
 
   @override
