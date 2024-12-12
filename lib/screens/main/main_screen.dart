@@ -5,7 +5,7 @@ import 'package:mamanike/screens/main/account/account_screen.dart';
 import 'package:mamanike/screens/main/category/category_screen.dart';
 import 'package:mamanike/screens/main/home/home_screen.dart';
 import 'package:mamanike/screens/main/order/order_screen.dart';
-import 'package:mamanike/models/navigation.dart';
+import 'package:mamanike/widget/navigation.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);

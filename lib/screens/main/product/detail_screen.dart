@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mamanike/models/button.dart';
+import 'package:mamanike/widget/button.dart';
 import 'package:mamanike/screens/main/order/contact_detail.dart';
 
 class DetailScreen extends StatefulWidget {

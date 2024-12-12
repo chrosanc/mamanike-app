@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mamanike/models/product_card.dart';
+import 'package:mamanike/widget/product_card.dart';
 import 'package:mamanike/screens/main/main_screen.dart'; // Import the MainScreen
 
 class HomeScreen extends StatefulWidget {
@@ -15,7 +15,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeState extends State<HomeScreen> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,22 +26,18 @@ class _HomeState extends State<HomeScreen> {
         title: _headerTitle(),
         actions: [
           IconButton(
-            onPressed: (){
-
-            }, 
-            icon: SvgPicture.asset('assets/svg/searchicon.svg', color: Colors.white,),
-
+            onPressed: () {},
+            icon: SvgPicture.asset(
+              'assets/svg/searchicon.svg',
+              color: Colors.white,
             ),
-
-            IconButton(
-            onPressed: (){
-
-            }, 
-          icon:SvgPicture.asset('assets/svg/carticon.svg', color: Colors.white),
-
-            ),
-                      const SizedBox(width: 14),
-
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: SvgPicture.asset('assets/svg/carticon.svg',
+                color: Colors.white),
+          ),
+          const SizedBox(width: 14),
         ],
         leading: Container(
           margin: const EdgeInsets.only(left: 10),
@@ -174,8 +169,8 @@ class _HomeState extends State<HomeScreen> {
               child: GestureDetector(
                 onTap: () {
                   if (widget.navigateToCategory != null) {
-                widget.navigateToCategory!(); // Call the callback
-              }
+                    widget.navigateToCategory!(); // Call the callback
+                  }
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -188,7 +183,8 @@ class _HomeState extends State<HomeScreen> {
                         color: Colors.orange,
                       ),
                     ),
-                    SvgPicture.asset('assets/svg/arrow_right.svg', width: 15, height: 15, fit: BoxFit.contain),
+                    SvgPicture.asset('assets/svg/arrow_right.svg',
+                        width: 15, height: 15, fit: BoxFit.contain),
                   ],
                 ),
               ),
@@ -255,7 +251,11 @@ class _HomeState extends State<HomeScreen> {
 
   Widget _buildCards(String documentId, String namaKategori) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('produk').doc(documentId).collection('list').snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('produk')
+          .doc(documentId)
+          .collection('list')
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

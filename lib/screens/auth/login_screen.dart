@@ -1,124 +1,23 @@
-import 'package:cherry_toast/cherry_toast.dart';
-import 'package:cherry_toast/resources/arrays.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
 import 'package:mamanike/screens/auth/forgotpassword_screen.dart';
-import 'package:mamanike/screens/auth/phoneverification_screen.dart';
 import 'package:mamanike/screens/auth/register_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mamanike/screens/main/main_screen.dart';
+import 'package:mamanike/viewmodel/auth/login_viewmodel.dart';
+import 'package:provider/provider.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  bool _obscureText = true;
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> saveFCMToken() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    String? token = await messaging.getToken();
-
-    if (token != null) {
-      final User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-          'fcmToken': token,
-        });
-      }
-    }
-  }
-
-  Future<void> _login() async {
-    try {
-      await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      await saveFCMToken();
-
-      final User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        if (user.phoneNumber == null) {
-          if (mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PhoneverificationScreen(user: user),
-              ),
-            );
-          }
-          CherryToast.success(
-            title: Text(
-              "Silahkan Verifikasi nomor telepon.",
-              style: GoogleFonts.poppins(fontSize: 12),
-            ),
-            animationType: AnimationType.fromTop,
-          ).show(context);
-        } else {
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MainScreen()),
-            );
-          }
-          CherryToast.success(
-            title: const Text("Login Berhasil"),
-            animationType: AnimationType.fromTop,
-          ).show(context);
-        }
-      } else {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const MainScreen()),
-          );
-        }
-        CherryToast.success(
-          title: const Text("Login Berhasil"),
-          animationType: AnimationType.fromTop,
-        ).show(context);
-      }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        CherryToast.error(
-          title: const Text("Akun tidak ditemukan. Silakan daftar."),
-          animationType: AnimationType.fromTop,
-        ).show(context);
-      } else if (e.code == 'wrong-password') {
-        CherryToast.error(
-          title: const Text("Password Salah"),
-          animationType: AnimationType.fromTop,
-        ).show(context);
-      } else {
-        CherryToast.error(
-          title: Text("Error: ${e.message}"),
-          animationType: AnimationType.fromTop,
-        ).show(context);
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final loginViewModel = Provider.of<LoginViewModel>(context);
+
+    final _emailController = TextEditingController();
+    final _passwordController = TextEditingController();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -164,7 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 25),
-                    padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFAFAFA),
                       border: Border.all(color: const Color(0xFF9E9E9E)),
@@ -179,7 +79,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           IconlyBold.message,
                           color: Color(0xFF9E9E9E),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 18),
                         hintStyle: GoogleFonts.poppins(
                           fontSize: 14,
                           height: 140 / 100,
@@ -195,7 +96,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 12),
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 25),
-                    padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFAFAFA),
                       border: Border.all(color: const Color(0xFF9E9E9E)),
@@ -203,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: TextFormField(
                       controller: _passwordController,
-                      obscureText: _obscureText,
+                      obscureText: loginViewModel.obscureText,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "Password",
@@ -213,15 +115,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureText ? IconlyBold.show : IconlyBold.hide,
+                            loginViewModel.obscureText
+                                ? IconlyBold.show
+                                : IconlyBold.hide,
                           ),
                           onPressed: () {
-                            setState(() {
-                              _obscureText = !_obscureText;
-                            });
+                            loginViewModel.togglePasswordVisibility();
                           },
                         ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 18),
                         hintStyle: GoogleFonts.poppins(
                           fontSize: 14,
                           height: 140 / 100,
@@ -237,7 +140,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 25),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotpasswordScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ForgotpasswordScreen()));
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 27),
@@ -259,7 +165,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 25),
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _login,
+                      onPressed: () {
+                        loginViewModel.login(
+                          _emailController.text,
+                          _passwordController.text,
+                          context,
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                         backgroundColor: const Color(0xFFFFB113),
@@ -269,43 +181,50 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       child: Text(
-                        'Masuk',
+                        'Login',
                         style: GoogleFonts.poppins(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Text.rich(
-                    TextSpan(
-                      text: 'Belum punya akun? ',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: 'Daftar',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFFFFB113),
-                          ),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                              );
-                            },
+                  const SizedBox(height: 25),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 25),
+                    child: RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        text: 'Belum memiliki akun? ',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: const Color(0xFF9E9E9E),
                         ),
-                      ],
+                        children: [
+                          TextSpan(
+                            text: 'Daftar disini',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFFFB113),
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        RegisterScreen(),
+                                  ),
+                                );
+                              },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 50),
                 ],
               ),
             ),

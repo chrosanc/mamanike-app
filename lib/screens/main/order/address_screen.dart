@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mamanike/models/CustomAlert.dart';
-import 'package:mamanike/models/address_card.dart';
-import 'package:mamanike/models/button.dart';
+import 'package:mamanike/widget/CustomAlert.dart';
+import 'package:mamanike/widget/address_card.dart';
+import 'package:mamanike/widget/button.dart';
 import 'package:mamanike/screens/main/order/detailaddress_screen.dart';
 import 'package:mamanike/service/database_service.dart';
 import 'package:cherry_toast/cherry_toast.dart';

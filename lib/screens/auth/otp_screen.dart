@@ -1,15 +1,13 @@
-import 'dart:async';
-import 'package:cherry_toast/cherry_toast.dart';
-import 'package:cherry_toast/resources/arrays.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mamanike/screens/auth/success_screen.dart';
+import 'package:mamanike/viewmodel/auth/otp_viewmodel.dart';
+import 'package:provider/provider.dart';
 
-class Otpscreen extends StatefulWidget {
+class Otpscreen extends StatelessWidget {
   final String phoneNumber;
   final User user;
 
@@ -20,186 +18,39 @@ class Otpscreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  OtpscreenState createState() => OtpscreenState();
-}
-
-class OtpscreenState extends State<Otpscreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final List<TextEditingController> _controllers = List.generate(6, (index) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
-
-  int _resendCountdown = 60;
-  bool _isLoading = false;
-  String? _verificationId;
-  int? _resendToken;
-  Timer? _resendTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    _sendOtp();
-    _startResendCountdown();
-  }
-
-  void _startResendCountdown() {
-    _resendTimer?.cancel();
-    _resendCountdown = 60;
-    const oneSecond = Duration(seconds: 1);
-    _resendTimer = Timer.periodic(oneSecond, (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      setState(() {
-        if (_resendCountdown == 0) {
-          timer.cancel();
-        } else {
-          _resendCountdown--;
-        }
-      });
-    });
-  }
-
-  void _handleKeyPress(int index, String value) {
-    if (value.isNotEmpty) {
-      if (index < _focusNodes.length - 1) {
-        _focusNodes[index + 1].requestFocus();
-      } else {
-        _focusNodes[index].unfocus();
-      }
-    } else if (value.isEmpty && index > 0) {
-      _focusNodes[index - 1].requestFocus();
-    }
-  }
-
-  String _getOtp() {
-    return _controllers.map((controller) => controller.text).join();
-  }
-
-  Future<void> _sendOtp() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    await _auth.verifyPhoneNumber(
-      phoneNumber: widget.phoneNumber,
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await _auth.currentUser?.linkWithCredential(credential);
-        if (!mounted) return;
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const SuccessScreen()));
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-          CherryToast.error(
-            title: Text(e.message ?? 'Verifikasi Gagal'),
-            animationType: AnimationType.fromRight,
-            animationDuration: const Duration(milliseconds: 1000),
-            autoDismiss: true,
-          ).show(context);
-        }
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        if (mounted) {
-          setState(() {
-            _verificationId = verificationId;
-            _resendToken = resendToken;
-            _isLoading = false;
-          });
-        }
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        if (mounted) {
-          setState(() {
-            _verificationId = verificationId;
-          });
-        }
-      },
-      timeout: const Duration(seconds: 60),
-    );
-  }
-
-  void _verifyOtp() async {
-    final otp = _getOtp();
-    if (otp.length != 6) {
-      CherryToast.error(
-        title: const Text('Kode OTP tidak valid'),
-        animationType: AnimationType.fromRight,
-        animationDuration: const Duration(milliseconds: 1000),
-        autoDismiss: true,
-      ).show(context);
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: _verificationId!,
-        smsCode: otp,
-      );
-      await widget.user.linkWithCredential(credential);
-      if (!mounted) return;
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const SuccessScreen()));
-    } on FirebaseAuthException catch (e) {
-      if (mounted) {
-        CherryToast.error(
-          title: Text(e.message ?? 'Verifikasi Gagal'),
-          animationType: AnimationType.fromRight,
-          animationDuration: const Duration(milliseconds: 1000),
-          autoDismiss: true,
-        ).show(context);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    for (final controller in _controllers) {
-      controller.dispose();
-    }
-    for (final focusNode in _focusNodes) {
-      focusNode.dispose();
-    }
-    _resendTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          const SizedBox(height: 68),
-          _header(context),
-          const SizedBox(height: 20),
-          _otpInput(),
-          const SizedBox(height: 20),
-          _resendButton(context),
-          const SizedBox(height: 20),
-          _verifyButton(context),
-        ],
+    return ChangeNotifierProvider(
+      create: (_) => OtpViewModel()..sendOtp(context, phoneNumber),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Consumer<OtpViewModel>(
+          builder: (context, viewModel, child) {
+            return Column(
+              children: [
+                const SizedBox(height: 68),
+                _header(context),
+                const SizedBox(height: 20),
+                _otpInput(viewModel),
+                const SizedBox(height: 20),
+                _resendButton(viewModel, context),
+                const SizedBox(height: 20),
+                _verifyButton(viewModel, context),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  Container _verifyButton(BuildContext context) {
+  Container _verifyButton(OtpViewModel viewModel, BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 25),
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: !_isLoading ? _verifyOtp : null,
+        onPressed: !viewModel.isLoading
+            ? () => viewModel.verifyOtp(context, viewModel.verificationId, user)
+            : null,
         style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: const Color(0xFFFFB113),
@@ -208,7 +59,7 @@ class OtpscreenState extends State<Otpscreen> {
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-        child: _isLoading
+        child: viewModel.isLoading
             ? const SizedBox(
                 height: 24,
                 width: 24,
@@ -229,7 +80,7 @@ class OtpscreenState extends State<Otpscreen> {
     );
   }
 
-  Container _resendButton(BuildContext context) {
+  Container _resendButton(OtpViewModel viewModel, BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 25),
       child: Center(
@@ -243,8 +94,8 @@ class OtpscreenState extends State<Otpscreen> {
             ),
             children: <TextSpan>[
               TextSpan(
-                text: _resendCountdown > 0
-                    ? 'Kirim ulang dalam $_resendCountdown detik'
+                text: viewModel.resendCountdown > 0
+                    ? 'Kirim ulang dalam ${viewModel.resendCountdown} detik'
                     : 'Kirim ulang',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
@@ -253,9 +104,9 @@ class OtpscreenState extends State<Otpscreen> {
                 ),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
-                    if (_resendCountdown == 0 && !_isLoading) {
-                      _sendOtp();
-                      _startResendCountdown();
+                    if (viewModel.resendCountdown == 0 && !viewModel.isLoading) {
+                      viewModel.sendOtp(context, phoneNumber);
+                      viewModel.startResendCountdown();
                     }
                   },
               ),
@@ -266,19 +117,19 @@ class OtpscreenState extends State<Otpscreen> {
     );
   }
 
-  Padding _otpInput() {
+  Padding _otpInput(OtpViewModel viewModel) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(6, (index) {
-          return _buildOtpInputBox(index);
+          return _buildOtpInputBox(viewModel, index);
         }),
       ),
     );
   }
 
-  Widget _buildOtpInputBox(int index) {
+  Widget _buildOtpInputBox(OtpViewModel viewModel, int index) {
     return Container(
       width: 45,
       height: 45,
@@ -289,12 +140,22 @@ class OtpscreenState extends State<Otpscreen> {
       ),
       child: Center(
         child: TextField(
-          controller: _controllers[index],
-          focusNode: _focusNodes[index],
+          controller: viewModel.controllers[index],
+          focusNode: viewModel.focusNodes[index],
           keyboardType: TextInputType.number,
           textAlign: TextAlign.center,
           maxLength: 1,
-          onChanged: (value) => _handleKeyPress(index, value),
+          onChanged: (value) {
+            if (value.isNotEmpty) {
+              if (index < viewModel.focusNodes.length - 1) {
+                viewModel.focusNodes[index + 1].requestFocus();
+              } else {
+                viewModel.focusNodes[index].unfocus();
+              }
+            } else if (value.isEmpty && index > 0) {
+              viewModel.focusNodes[index - 1].requestFocus();
+            }
+          },
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           decoration: const InputDecoration(
             border: InputBorder.none,
@@ -318,29 +179,26 @@ class OtpscreenState extends State<Otpscreen> {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFB113), // Background color of the button
-              borderRadius: BorderRadius.circular(8), // Rounded corners
+              shape: BoxShape.circle,
+              color: const Color(0xFFFFB113),
             ),
             child: IconButton(
-              icon: SvgPicture.asset('assets/svg/back.svg', color: Colors.white),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              icon: SvgPicture.asset('assets/icons/arrow_back.svg'),
+              onPressed: () => Navigator.pop(context),
             ),
           ),
         ),
         Expanded(
-          child: Text(
-            'OTP Verifikasi.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFFFFB113),
+          child: Center(
+            child: Text(
+              'Masukkan Kode OTP',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
-        const SizedBox(width: 60), // Add space between the text and the right edge of the screen
       ],
     );
   }

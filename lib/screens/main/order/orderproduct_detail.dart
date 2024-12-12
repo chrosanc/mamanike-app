@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:mamanike/models/modals/dateModals.dart';
+import 'package:mamanike/widget/modals/dateModals.dart';
 import 'package:mamanike/service/database_service.dart';
 import 'package:iconly/iconly.dart';
 

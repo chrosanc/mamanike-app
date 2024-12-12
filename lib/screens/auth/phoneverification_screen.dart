@@ -1,84 +1,57 @@
-import 'package:cherry_toast/cherry_toast.dart';
-import 'package:cherry_toast/resources/arrays.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mamanike/screens/auth/otp_screen.dart';
+import 'package:mamanike/viewmodel/auth/phone_verification_viewmodel.dart';
+import 'package:provider/provider.dart';
 
-class PhoneverificationScreen extends StatefulWidget {
+class PhoneverificationScreen extends StatelessWidget {
   final User user;
 
   const PhoneverificationScreen({super.key, required this.user});
 
   @override
-  _PhoneverificationScreenState createState() => _PhoneverificationScreenState();
-}
-
-class _PhoneverificationScreenState extends State<PhoneverificationScreen> {
-  final TextEditingController _phoneController = TextEditingController();
-  bool _phoneFilled = false;
-  bool _isLoading = false;
-
-
-  bool _isFormFilled() {
-    return _phoneFilled;
-  }
-
-  void _sendOtp() {
-    try{
-  setState(() {
-      _isLoading = true;
-    });
-
-    String phoneNumber = "+62${_phoneController.text.replaceAll(" ", "")}";
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Otpscreen(phoneNumber: phoneNumber, user: widget.user)));
-  
-    } catch(e) {
-      print(e);
-    } finally{
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  
-  }
-
-
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          const SizedBox(height: 68),
-          _header(context),
-          const SizedBox(height: 20),
-          _form(),
-          const SizedBox(height: 20),
-          _button(context),
-        ],
+    return ChangeNotifierProvider(
+      create: (_) => PhoneVerificationViewModel(user),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Consumer<PhoneVerificationViewModel>(
+          builder: (context, viewModel, child) {
+            return Column(
+              children: [
+                const SizedBox(height: 68),
+                _header(context),
+                const SizedBox(height: 20),
+                _form(viewModel),
+                const SizedBox(height: 20),
+                _button(viewModel, context),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  Container _button(BuildContext context) {
+  Container _button(PhoneVerificationViewModel viewModel, BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 25),
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _isFormFilled() && !_isLoading ? _sendOtp : null,
+        onPressed: viewModel.isFormFilled && !viewModel.isLoading
+            ? () => viewModel.sendOtp(context)
+            : null,
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          backgroundColor: _isFormFilled() ? const Color(0xFFFFB113) : Colors.grey,
+          backgroundColor: viewModel.isFormFilled ? const Color(0xFFFFB113) : Colors.grey,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-        child: _isLoading
+        child: viewModel.isLoading
             ? const SizedBox(
                 height: 24,
                 width: 24,
@@ -99,7 +72,7 @@ class _PhoneverificationScreenState extends State<PhoneverificationScreen> {
     );
   }
 
-  Column _form() {
+  Column _form(PhoneVerificationViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -108,7 +81,10 @@ class _PhoneverificationScreenState extends State<PhoneverificationScreen> {
           child: Text(
             'Nomor Telepon',
             style: GoogleFonts.poppins(
-                fontSize: 14, fontWeight: FontWeight.normal, color: const Color(0xFF9E9E9E)),
+              fontSize: 14,
+              fontWeight: FontWeight.normal,
+              color: const Color(0xFF9E9E9E),
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -127,11 +103,9 @@ class _PhoneverificationScreenState extends State<PhoneverificationScreen> {
               _PhoneNumberFormatter(),
             ],
             onChanged: (value) {
-              setState(() {
-                _phoneFilled = value.isNotEmpty;
-              });
+              viewModel.updatePhoneFilled(value);
             },
-            controller: _phoneController,
+            controller: viewModel.phoneController,
             decoration: InputDecoration(
               border: InputBorder.none,
               prefix: Container(
@@ -166,8 +140,8 @@ class _PhoneverificationScreenState extends State<PhoneverificationScreen> {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFB113), // Background color of the button
-              borderRadius: BorderRadius.circular(8), // Rounded corners
+              color: const Color(0xFFFFB113),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: IconButton(
               icon: SvgPicture.asset('assets/svg/back.svg', color: Colors.white),
@@ -188,7 +162,7 @@ class _PhoneverificationScreenState extends State<PhoneverificationScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 60), // Add space between the text and the right edge of the screen
+        const SizedBox(width: 60),
       ],
     );
   }
@@ -217,7 +191,6 @@ class _PhoneNumberFormatter extends TextInputFormatter {
       if (newValue.selection.end >= 11) selectionIndex++;
     }
 
-    // Dump the rest.
     if (newTextLength >= usedSubstringIndex) {
       newText.write(newValue.text.substring(usedSubstringIndex));
     }

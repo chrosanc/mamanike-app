@@ -40,6 +40,43 @@ class DatabaseService {
     }
   }
 
+Future<List<Map<String, dynamic>>> getAllOrders() async {
+  try {
+    // Ambil koleksi 'order' yang berisi dokumen pengguna
+    CollectionReference ordersCollection = _firestore.collection('order');
+    QuerySnapshot userSnapshot = await ordersCollection.get();
+
+    print("Users Collection Size: ${userSnapshot.docs.length}"); // Debugging
+
+    List<Map<String, dynamic>> allOrders = [];
+
+    // Iterasi melalui setiap dokumen pengguna
+    for (var userDoc in userSnapshot.docs) {
+      CollectionReference userOrdersCollection = userDoc.reference.collection('pesanan');
+      QuerySnapshot userOrdersSnapshot = await userOrdersCollection.get();
+
+      print("User ${userDoc.id} Orders Size: ${userOrdersSnapshot.docs.length}"); // Debugging
+
+      // Iterasi melalui setiap dokumen pesanan
+      for (var orderDoc in userOrdersSnapshot.docs) {
+        Map<String, dynamic> orderData = orderDoc.data() as Map<String, dynamic>;
+        allOrders.add(orderData);
+      }
+    }
+
+    print('Fetched Orders: $allOrders'); // Debugging
+
+    return allOrders;
+  } catch (e) {
+    print("Error getting all orders: $e");
+    return [];
+  }
+}
+
+
+
+
+
 
   // Memulai streaming alamat pengguna
   void startAddressStream() async {
@@ -133,6 +170,45 @@ class DatabaseService {
     }
   }
 
+Future<void> changeStatusToOrderConfirmed(String invId) async {
+  try {
+    // Mengambil koleksi pengguna
+    final CollectionReference usersCollection = _firestore.collection('order');
+    
+    // Mendapatkan daftar dokumen pengguna
+    final QuerySnapshot userSnapshot = await usersCollection.get();
+
+    // Iterasi melalui setiap dokumen pengguna
+    for (var userDoc in userSnapshot.docs) {
+      final String uid = userDoc.id;
+      final CollectionReference ordersCollection = userDoc.reference.collection('pesanan');
+
+      // Mencari dokumen pesanan dengan invId yang sesuai
+      final QuerySnapshot existingDocs = await ordersCollection
+          .where('invId', isEqualTo: invId)
+          .limit(1)
+          .get();
+
+      if (existingDocs.docs.isNotEmpty) {
+        // Memperbarui dokumen jika ditemukan
+        await existingDocs.docs.first.reference.update({
+          'orderDate': Timestamp.now(),
+          'status': 'Pesanan Dikonfirmasi'
+        });
+        return; // Keluar dari loop jika update berhasil
+      }
+    }
+
+    // Menangani kasus jika dokumen dengan invId tidak ditemukan
+    throw Exception('Pesanan dengan ID $invId tidak ditemukan di semua pengguna');
+  } catch (e) {
+    // Menangani kesalahan yang terjadi
+    print('Error updating order status: $e');
+    rethrow;
+  }
+}
+
+
   Future<void> changeStatusToWaitingConfirmation(invId) async {
     try{
       final User? user = _auth.currentUser;
@@ -211,6 +287,7 @@ Future<void> orderItem(Map<String, dynamic> deliveryAddress, Map<String, dynamic
         final int currentStock = productDoc['stok'];
 
         if (currentStock > 0) {
+          final DocumentReference ordersUID = _firestore.collection('order').doc(uid);
           final CollectionReference ordersCollection = _firestore.collection('order').doc(uid).collection('pesanan');
 
           bool isUnique = false;
@@ -226,6 +303,10 @@ Future<void> orderItem(Map<String, dynamic> deliveryAddress, Map<String, dynamic
           final String downloadURL = await _storage.ref(filePath).getDownloadURL();
           identityData['imagePath'] = downloadURL;
 
+          final Map<String, dynamic> uidReference = {
+            'uid' : uid
+          };
+
           final Map<String, dynamic> orderData = {
             'invId': invId,
             'identityData': identityData,
@@ -240,7 +321,7 @@ Future<void> orderItem(Map<String, dynamic> deliveryAddress, Map<String, dynamic
               'productImage' : productImage,
             },
           };
-
+          transaction.set(ordersUID, uidReference);
           transaction.set(ordersCollection.doc(invId), orderData);
           transaction.update(productDoc.reference, {'stok': currentStock - 1});
         } else {
@@ -299,8 +380,33 @@ Future<void> orderItem(Map<String, dynamic> deliveryAddress, Map<String, dynamic
     }
   }
 
+  Future<Map<String, dynamic>?> showDetailOrderfromAdmin(String invId) async {
+    try {
+      // Mengambil semua dokumen dalam koleksi 'order' (uid)
+      CollectionReference ordersCollection = _firestore.collection('order');
+      QuerySnapshot userSnapshot = await ordersCollection.get();
 
-  Future<Map<String, dynamic>> showUserDetailOrder(String invId) async {
+      // Iterasi melalui setiap dokumen pengguna (uid)
+      for (var userDoc in userSnapshot.docs) {
+        String userId = userDoc.id;
+
+        // Mengambil koleksi 'pesanan' untuk setiap pengguna
+        CollectionReference userOrdersCollection = ordersCollection.doc(userId).collection('pesanan');
+        QuerySnapshot userOrdersSnapshot = await userOrdersCollection.where('invId', isEqualTo: invId).limit(1).get();
+
+        // Jika pesanan dengan invId ditemukan, kembalikan data pesanan
+        if (userOrdersSnapshot.docs.isNotEmpty) {
+          return userOrdersSnapshot.docs.first.data() as Map<String, dynamic>;
+        }
+      }
+      return null;
+    } catch (e) {
+      print("Error showing detail order from admin: $e");
+      return null;
+    }
+  }
+
+    Future<Map<String, dynamic>> showUserDetailOrder(String invId) async {
     User? user = _auth.currentUser;
     if (user != null) {
       String uid = user.uid;

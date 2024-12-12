@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mamanike/models/product_card.dart';
-import 'package:mamanike/models/search_form.dart';
+import 'package:mamanike/widget/product_card.dart';
+import 'package:mamanike/widget/search_form.dart';
 
 class ProductlistScreen extends StatefulWidget {
   final Map<String, dynamic>? data;

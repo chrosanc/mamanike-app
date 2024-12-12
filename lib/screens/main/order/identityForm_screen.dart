@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mamanike/models/CustomForms.dart';
-import 'package:mamanike/models/button.dart';
+import 'package:mamanike/widget/CustomForms.dart';
+import 'package:mamanike/widget/button.dart';
 
 class IdentityFormScreen extends StatefulWidget {
   final Map<String, dynamic>? initialData;
