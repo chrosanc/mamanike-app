@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mamanike/screens/main/product/detail_screen.dart';
+import 'package:mamanike/viewmodel/main/order/order_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class ProductCard extends StatelessWidget {
   final Map<String, dynamic>? data;
@@ -9,6 +11,8 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<OrderViewModel>(context);
+
     if (data == null || data!['gambar'] == null || data!['nama'] == null || data!['stok'] == null || data!['harga'] == null) {
       return SizedBox.shrink(); // Return an empty widget if any data is null
     }
@@ -20,7 +24,8 @@ class ProductCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => DetailScreen(data: data!)));
+        viewModel.selectedProductData = data!;
+        Navigator.push(context, MaterialPageRoute(builder: (context) => DetailScreen()));
       },
       child: AspectRatio(
         aspectRatio: 148 / 205,
@@ -58,6 +63,15 @@ class ProductCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.start,
                 ),
+                Text(
+                  'Rp$price /bulan',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.orange,
+                  ),
+                  textAlign: TextAlign.start,
+                ),
                 const SizedBox(height: 12),
                 Text(
                   '$stock Tersedia',
@@ -68,16 +82,7 @@ class ProductCard extends StatelessWidget {
                   ),
                   textAlign: TextAlign.start,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Rp$price /bulan',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.orange,
-                  ),
-                  textAlign: TextAlign.start,
-                ),
+
               ],
             ),
           ),

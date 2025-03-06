@@ -13,24 +13,22 @@ class PhoneverificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => PhoneVerificationViewModel(user),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Consumer<PhoneVerificationViewModel>(
-          builder: (context, viewModel, child) {
-            return Column(
-              children: [
-                const SizedBox(height: 68),
-                _header(context),
-                const SizedBox(height: 20),
-                _form(viewModel),
-                const SizedBox(height: 20),
-                _button(viewModel, context),
-              ],
-            );
-          },
-        ),
+
+    final viewModel = Provider.of<PhoneVerificationViewModel>(context);
+
+
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          const SizedBox(height: 68),
+          _header(context),
+          const SizedBox(height: 20),
+          _form(viewModel),
+          const SizedBox(height: 20),
+          _button(viewModel, context),
+        ],
       ),
     );
   }
@@ -41,7 +39,7 @@ class PhoneverificationScreen extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: viewModel.isFormFilled && !viewModel.isLoading
-            ? () => viewModel.sendOtp(context)
+            ? () => viewModel.fillPhoneNumber(context)
             : null,
         style: ElevatedButton.styleFrom(
           elevation: 0,
@@ -105,7 +103,7 @@ class PhoneverificationScreen extends StatelessWidget {
             onChanged: (value) {
               viewModel.updatePhoneFilled(value);
             },
-            controller: viewModel.phoneController,
+            controller: viewModel.phoneNumberController,
             decoration: InputDecoration(
               border: InputBorder.none,
               prefix: Container(

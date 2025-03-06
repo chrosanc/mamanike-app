@@ -7,13 +7,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mamanike/screens/admin/order_admin_screen.dart';
 import 'package:mamanike/screens/auth/phoneverification_screen.dart';
+import 'package:mamanike/screens/main/home/home_screen.dart';
 import 'package:mamanike/screens/main/main_screen.dart';
+import 'package:mamanike/widget/loadingwidget.dart';
 
 class LoginViewModel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _obscureText = true;
 
   bool get obscureText => _obscureText;
+
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   void togglePasswordVisibility() {
     _obscureText = !_obscureText;
@@ -35,52 +40,61 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> login(
-      String email, String password, BuildContext context) async {
-    if (email == 'admin@gmail.com' && password == 'Admin#1234') {
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => const OrderAdminScreen()));
-    } else {
-      try {
-        await _auth.signInWithEmailAndPassword(email: email, password: password);
-        await saveFCMToken();
+  Future<void> login(BuildContext context) async {
+    LoadingWidget.showLoadingDialog(context);
 
-        final User? user = _auth.currentUser;
-        if (user != null) {
-          if (user.phoneNumber == null) {
-            if (context.mounted) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PhoneverificationScreen(user: user),
-                ),
-              );
-            }
-            CherryToast.success(
-              title: Text(
-                "Silahkan Verifikasi nomor telepon.",
-                style: GoogleFonts.poppins(fontSize: 12),
-              ),
-              animationType: AnimationType.fromTop,
-            ).show(context);
-          } else {
-            if (context.mounted) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const MainScreen()),
-              );
-            }
-            CherryToast.success(
-              title: const Text("Login Berhasil"),
-              animationType: AnimationType.fromTop,
-            ).show(context);
-          }
-        }
-      } on FirebaseAuthException catch (e) {
-        _handleLoginError(e, context);
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+      await saveFCMToken();
+
+      final User? user = _auth.currentUser;
+      if (user == null) throw FirebaseAuthException(code: "user-not-found");
+
+      // Tutup loading dialog sebelum navigasi
+      Navigator.pop(context);
+
+      if (user.phoneNumber == null) {
+        // Navigasi ke verifikasi telepon jika belum diverifikasi
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PhoneverificationScreen(user: user),
+          ),
+        );
+
+        CherryToast.success(
+          title: Text(
+            "Silahkan verifikasi nomor telepon.",
+            style: GoogleFonts.poppins(fontSize: 12),
+          ),
+          animationType: AnimationType.fromTop,
+        ).show(context);
+
+        return; // Hindari eksekusi kode selanjutnya
       }
+
+      // Navigasi ke Home jika sudah verifikasi
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MainScreen(), // Ganti dengan layar utama
+        ),
+      );
+
+      CherryToast.success(
+        title: const Text("Login Berhasil"),
+        animationType: AnimationType.fromTop,
+      ).show(context);
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context); // Pastikan loading juga ditutup saat error
+      _handleLoginError(e, context);
     }
   }
+
+
 
   void _handleLoginError(FirebaseAuthException e, BuildContext context) {
     if (e.code == 'user-not-found') {

@@ -3,13 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mamanike/screens/main/category/productlist_screen.dart';
+import 'package:mamanike/theme.dart';
+import 'package:mamanike/viewmodel/main/main_container_viewmodel.dart';
 import 'package:mamanike/widget/product_card.dart';
-import 'package:mamanike/screens/main/main_screen.dart'; // Import the MainScreen
+import 'package:mamanike/screens/main/main_screen.dart';
+import 'package:provider/provider.dart'; // Import the MainScreen
 
 class HomeScreen extends StatefulWidget {
-  final VoidCallback? navigateToCategory;
-  const HomeScreen({Key? key, this.navigateToCategory}) : super(key: key);
-
   @override
   _HomeState createState() => _HomeState();
 }
@@ -17,6 +18,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    final containerViewModel = Provider.of<MainContainerViewmodel>(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -60,7 +63,7 @@ class _HomeState extends State<HomeScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _categoryHeader(),
+                _categoryHeader(containerViewModel),
                 const SizedBox(height: 24),
                 _recommendationText(),
                 const SizedBox(height: 16),
@@ -127,11 +130,14 @@ class _HomeState extends State<HomeScreen> {
     );
   }
 
-  Padding _categoryHeader() {
+  Padding _categoryHeader(MainContainerViewmodel containerViewModel) {
+    final Map<String, dynamic> strollerMap = {'nama_kategori': 'Stroller'};
+
+    final Map<String, dynamic> babyBoxMap = {'nama_kategori': 'Baby Box'};
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(25, 40, 24, 12),
       child: Container(
-        height: 168,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(6),
@@ -145,48 +151,48 @@ class _HomeState extends State<HomeScreen> {
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _categoryItem('assets/svg/stroller.svg', 'Stroller'),
-                _categoryItem('assets/svg/freezer.svg', 'Freezer'),
-                _categoryItem('assets/svg/carseat.svg', 'Carseat'),
-                _categoryItem('assets/svg/breastpump.svg', 'Breastpump'),
+                _categoryItem('assets/svg/stroller.svg', 'Stroller', () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              ProductlistScreen(data: strollerMap)));
+                }),
+                // _categoryItem('assets/svg/freezer.svg', 'Freezer'),
+                // _categoryItem('assets/svg/carseat.svg', 'Carseat'),
+                // _categoryItem('assets/svg/breastpump.svg', 'Breastpump'),
               ],
             ),
             const SizedBox(height: 16),
             const Divider(
               color: Colors.grey,
               height: 1,
-              thickness: 1,
-              indent: 13,
-              endIndent: 13,
+              thickness: 0.5,
             ),
             const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: GestureDetector(
-                onTap: () {
-                  if (widget.navigateToCategory != null) {
-                    widget.navigateToCategory!(); // Call the callback
-                  }
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Lihat Detail Kategori',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.orange,
-                      ),
+            GestureDetector(
+              onTap: () {
+                containerViewModel.navigateToPages(1);
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Lihat Semua Kategori',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.orange,
                     ),
-                    SvgPicture.asset('assets/svg/arrow_right.svg',
-                        width: 15, height: 15, fit: BoxFit.contain),
-                  ],
-                ),
+                  ),
+                  SvgPicture.asset('assets/svg/arrow_right.svg',
+                      width: 15, height: 15, fit: BoxFit.contain),
+                ],
               ),
             )
           ],
@@ -195,23 +201,26 @@ class _HomeState extends State<HomeScreen> {
     );
   }
 
-  Column _categoryItem(String assetPath, String label) {
+  Column _categoryItem(String assetPath, String label, Function()? onPressed) {
     return Column(
       children: [
-        Container(
-          height: 50,
-          width: 50,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: const Color(0xFFE0E0E0)),
-            color: Colors.white,
-          ),
-          child: Center(
-            child: SvgPicture.asset(
-              assetPath,
-              width: 32,
-              height: 32,
-              fit: BoxFit.contain,
+        GestureDetector(
+          onTap: onPressed,
+          child: Container(
+            height: 50,
+            width: 50,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: const Color(0xFFE0E0E0)),
+              color: Colors.white,
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                assetPath,
+                width: 32,
+                height: 32,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),
@@ -271,12 +280,15 @@ class _HomeState extends State<HomeScreen> {
           );
         }
 
-        return Row(
-          children: snapshot.data!.docs.map((DocumentSnapshot doc) {
-            Map<String, dynamic> itemData = doc.data() as Map<String, dynamic>;
-            itemData['nama_kategori'] = namaKategori;
-            return ProductCard(data: itemData);
-          }).toList(),
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5),
+          child: Row(
+            children: snapshot.data!.docs.map((DocumentSnapshot doc) {
+              Map<String, dynamic> itemData = doc.data() as Map<String, dynamic>;
+              itemData['nama_kategori'] = namaKategori;
+              return ProductCard(data: itemData);
+            }).toList(),
+          ),
         );
       },
     );

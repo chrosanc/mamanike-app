@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mamanike/models/Order.dart';
+import 'package:mamanike/viewmodel/main/order/order_viewmodel.dart';
 import 'package:mamanike/widget/CustomForms.dart';
 import 'package:mamanike/widget/button.dart';
+import 'package:provider/provider.dart';
 
 class IdentityFormScreen extends StatefulWidget {
   final Map<String, dynamic>? initialData;
@@ -18,57 +21,29 @@ class IdentityFormScreen extends StatefulWidget {
 }
 
 class _IdentityFormScreenState extends State<IdentityFormScreen> {
-  late TextEditingController fullNameController;
-  late TextEditingController phoneNumberController;
-  late TextEditingController emailController;
-  late TextEditingController identityNumberController;
-  late TextEditingController addressController;
 
-  XFile? _image;
 
-  @override
-  void initState() {
-    super.initState();
 
-    fullNameController = TextEditingController(text: widget.initialData?['fullName'] ?? '');
-    phoneNumberController = TextEditingController(text: widget.initialData?['phoneNumber'] ?? '');
-    emailController = TextEditingController(text: widget.initialData?['email'] ?? '');
-    identityNumberController = TextEditingController(text: widget.initialData?['identityNumber'] ?? '');
-    addressController = TextEditingController(text: widget.initialData?['address'] ?? '');
-    
-    if (widget.initialData?['imagePath'] != null) {
-      _image = XFile(widget.initialData!['imagePath']);
-    }
-  }
 
-  Future<void> _pickImage() async {
-    try {
-      final ImagePicker _picker = ImagePicker();
-      final XFile? image = await _picker.pickImage(source: ImageSource.camera);
-      setState(() {
-        _image = image;
-      });
-    } catch (e) {
-      print('Error picking image: $e');
-    }
-  }
 
- void _saveData() {
+ Future<void> _saveData(BuildContext context, OrderViewModel viewModel) async {
+
   final Map<String, dynamic> formData = {
-      'fullName': fullNameController.text,
-      'phoneNumber': phoneNumberController.text,
-      'email': emailController.text,
-      'identityNumber': identityNumberController.text,
-      'address': addressController.text,
-      'imagePath': _image?.path,
+      'fullName': viewModel.fullNameController.text,
+      'phoneNumber': viewModel.phoneNumberController.text,
+      'email': viewModel.emailController.text,
+      'identityNumber': viewModel.identityNumberController.text,
+      'identityAddress': viewModel.addressController.text,
+      'identityImage': viewModel.image?.path,
     };
-  
-  if (fullNameController.text.isEmpty ||
-      phoneNumberController.text.isEmpty ||
-      emailController.text.isEmpty ||
-      identityNumberController.text.isEmpty ||
-      addressController.text.isEmpty ||
-      _image == null) {
+
+
+  if (viewModel.fullNameController.text.isEmpty ||
+      viewModel.phoneNumberController.text.isEmpty ||
+      viewModel.emailController.text.isEmpty ||
+      viewModel.identityNumberController.text.isEmpty ||
+      viewModel.addressController.text.isEmpty ||
+      viewModel.image == null) {
       CherryToast.error(
         title: Text('Isikan semua form terlebih dahulu',
         style: GoogleFonts.poppins(
@@ -78,13 +53,14 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
         animationType: AnimationType.fromTop,
       ).show(context);
   } else{
-    Navigator.pop(context, formData);
-
+    viewModel.saveContactData(formData);
+    Navigator.pop(context);
   }
  }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<OrderViewModel>(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -117,7 +93,7 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
                     CustomForms(
                       title: 'Nama Lengkap (sesuai identitas)',
                       hintText: 'Ex: John Doe',
-                      controller: fullNameController,
+                      controller: viewModel.fullNameController,
                       onChanged: (value) {
                         setState(() {
                           
@@ -127,7 +103,7 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
                     const SizedBox(height: 24,),
                     CustomForms(
                       title: 'Nomor Handphone',
-                      controller: phoneNumberController,
+                      controller: viewModel.phoneNumberController,
                       hintText: 'Ex: +62 xxxx xxxx xxx',
                       onChanged: (value) {
                         setState(() {
@@ -138,7 +114,7 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
                     const SizedBox(height: 24,),
                     CustomForms(
                       title: 'Email',
-                      controller: emailController,
+                      controller: viewModel.emailController,
                       hintText: 'Ex: JohnDoe@mail.com',
                       onChanged: (value) {
                         setState(() {
@@ -150,7 +126,7 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
                     CustomForms(
                       title: 'Alamat (Sesuai Identitas)',
                       hintText: 'Ex: Jl. BatuBesar no 99 Kec. Batu, Kab. Batu,',
-                      controller: addressController,
+                      controller: viewModel.addressController,
                       onChanged: (value) {
                         setState(() {
                           // Do something if needed
@@ -160,7 +136,7 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
                     const SizedBox(height: 24,),
                     CustomForms(
                       title: 'Nomor KTP/SIM/NPWP',
-                      controller: identityNumberController,
+                      controller: viewModel.identityNumberController,
                       onChanged: (value) {
                         setState(() {
                           // Do something if needed
@@ -178,7 +154,7 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
                     ),
                     const SizedBox(height: 12,),
                     GestureDetector(
-                      onTap: _pickImage,
+                      onTap: viewModel.pickIdentityImage,
                       child: Container(
                         height: 200,
                         decoration: BoxDecoration(
@@ -189,9 +165,9 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(24),
                           child: Center(
-                            child: _image == null
+                            child: viewModel.image == null
                                 ? const Icon(IconlyBold.upload, size: 102,)
-                                : Image.file(File(_image!.path), fit: BoxFit.cover, width: double.infinity, height: double.infinity),
+                                : Image.file(File(viewModel.image!.path), fit: BoxFit.cover, width: double.infinity, height: double.infinity),
                           ),
                         ),
                       ),
@@ -203,7 +179,9 @@ class _IdentityFormScreenState extends State<IdentityFormScreen> {
           ),
           CustomButton(
             text: 'Simpan',
-            onPressed: _saveData,
+            onPressed: () {
+              _saveData(context, viewModel);
+            },
           ),
         ],
       ),

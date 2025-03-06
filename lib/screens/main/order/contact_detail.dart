@@ -5,103 +5,30 @@ import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mamanike/viewmodel/main/order/order_viewmodel.dart';
 import 'package:mamanike/widget/CustomAlert.dart';
 import 'package:mamanike/widget/CustomForms.dart';
 import 'package:mamanike/widget/button.dart';
 import 'package:mamanike/screens/main/order/detail_order.dart';
 import 'package:mamanike/screens/main/order/identityForm_screen.dart';
 import 'package:mamanike/service/database_service.dart';
+import 'package:provider/provider.dart';
 
 class ContactDetail extends StatefulWidget {
-  final Map<String, dynamic> data;
-  const ContactDetail({Key? key, required this.data}) : super(key: key);
+  const ContactDetail({Key? key}) : super(key: key);
 
   @override
   _ContactDetailState createState() => _ContactDetailState();
 }
 
 class _ContactDetailState extends State<ContactDetail> {
-  bool orderForAnotherPerson = false;
-  bool fullNameFilled = false;
-  bool phoneNumberFilled = false;
-  bool _isLoading = false;
 
-  final TextEditingController fullNameController = TextEditingController();
-  final TextEditingController phoneNumberController = TextEditingController();
-
-  Map<String, dynamic> identityData = {};
-
-  final DatabaseService _databaseService = DatabaseService();
-
-  Future<void> _addToFirestore() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    String? anotherPersonName;
-    String? anotherPersonNumber;
-    String invId = 'Inv - ${_generateRandomString()}';
-
-    final File imageFile = File(identityData['imagePath']);
- 
-    if (orderForAnotherPerson) {
-      anotherPersonName = fullNameController.text;
-      anotherPersonNumber = phoneNumberController.text;
-      widget.data['anotherPersonName'] = anotherPersonName;
-      widget.data['anotherPersonNumber'] = anotherPersonNumber;
-    } else {
-      widget.data.remove('anotherPersonName');
-      widget.data.remove('anotherPersonNumber');
-    }
-
-      widget.data['identityData'] = identityData;
-
-
-    try {
-      await _databaseService.reserveItem(
-        invId,
-        widget.data['nama_kategori'],
-        widget.data['nama'],
-        widget.data['gambar'],
-        identityData,
-        imageFile,
-        anotherPersonName,
-        anotherPersonNumber
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DetailOrder(data: widget.data, invId: invId,),
-        ),
-      );
-    } catch (e) {
-      print('Error adding to Firestore: $e');
-      CherryToast.error(
-        title: Text(
-          'Gagal memproses identitas',
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.normal,
-          ),
-        ),
-        animationType: AnimationType.fromTop,
-      ).show(context);
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  String _generateRandomString({int length = 6}) {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  final random = Random();
-  return String.fromCharCodes(Iterable.generate(length, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
-}
 
   @override
   Widget build(BuildContext context) {
+
+    final viewModel = Provider.of<OrderViewModel>(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -142,20 +69,13 @@ class _ContactDetailState extends State<ContactDetail> {
                   const SizedBox(height: 16),
                   InkWell(
                     onTap: () async {
-                      final result = await Navigator.push(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => IdentityFormScreen(
-                            initialData: identityData,
-                          ),
+                          builder: (context) => IdentityFormScreen(),
                         ),
                       );
 
-                      if (result != null) {
-                        setState(() {
-                          identityData = result;
-                        });
-                      }
                     },
                     child: InputDecorator(
                       decoration: InputDecoration(
@@ -169,7 +89,7 @@ class _ContactDetailState extends State<ContactDetail> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            identityData.isEmpty
+                            viewModel.contactFormData.isEmpty
                                 ? 'Masukkan Identitas'
                                 : 'Identitas Terisi',
                             style: GoogleFonts.poppins(
@@ -186,7 +106,7 @@ class _ContactDetailState extends State<ContactDetail> {
                   ),
                   const SizedBox(height: 16),
                   CheckboxListTile(
-                    value: orderForAnotherPerson,
+                    value: viewModel.orderForAnotherPerson,
                     title: Text(
                       'Pesan untuk orang lain',
                       style: GoogleFonts.poppins(
@@ -197,29 +117,25 @@ class _ContactDetailState extends State<ContactDetail> {
                     activeColor: const Color(0xFFFFB113),
                     onChanged: (bool? value) {
                       setState(() {
-                        orderForAnotherPerson = value!;
+                        viewModel.orderForAnotherPerson = value!;
                       });
                     },
                   ),
-                  if (orderForAnotherPerson) ...[
+                  if (viewModel.orderForAnotherPerson) ...[
                     const SizedBox(height: 16),
                     CustomForms(
                       title: 'Nama Lengkap',
-                      controller: fullNameController,
+                      controller: viewModel.anotherPersonNameController,
                       onChanged: (value) {
-                        setState(() {
-                          fullNameFilled = value.isNotEmpty;
-                        });
+                          viewModel.fullNameFilled = value.isNotEmpty;
                       },
                     ),
                     const SizedBox(height: 16),
                     CustomForms(
                       title: 'Nomor Handphone',
-                      controller: phoneNumberController,
+                      controller: viewModel.anotherPersonPhoneNumberController,
                       onChanged: (value) {
-                        setState(() {
-                          phoneNumberFilled = value.isNotEmpty;
-                        });
+                          viewModel.phoneNumberFilled = value.isNotEmpty;
                       },
                     ),
                   ],
@@ -229,10 +145,10 @@ class _ContactDetailState extends State<ContactDetail> {
             const SizedBox(height: 24),
             CustomButton(
               text: 'Berikutnya',
-              isLoading: _isLoading,
+              isLoading: viewModel.isLoading,
               onPressed: () {
-                if (_validateFields()) {
-                  _showConfirmationDialog();
+                if (viewModel.validateContactFields()) {
+                  _showConfirmationDialog(viewModel, context);
                 } else {
                   CherryToast.error(
                     title: Text(
@@ -253,24 +169,15 @@ class _ContactDetailState extends State<ContactDetail> {
     );
   }
 
-  bool _validateFields() {
-    if (orderForAnotherPerson) {
-      return identityData.isNotEmpty &&
-          fullNameController.text.isNotEmpty &&
-          phoneNumberController.text.isNotEmpty;
-    } else {
-      return identityData.isNotEmpty;
-    }
-  }
 
-  void _showConfirmationDialog() {
+  void _showConfirmationDialog(OrderViewModel viewModel, BuildContext context) {
     showCustomAlertDialog(
       context,
       'Apakah data sudah sesuai?',
       'Pastikan data yang Anda masukkan telah sesuai. Anda tidak dapat mengubah detail pesanan setelah melanjutkan ke halaman pembayaran',
       () async {
         Navigator.of(context).pop();
-        await _addToFirestore();
+        await viewModel.sendContactData(context);
       },
     );
   }

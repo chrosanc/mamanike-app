@@ -1,20 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mamanike/viewmodel/main/category/category_viewmodel.dart';
+import 'package:mamanike/viewmodel/main/category/product_viewmodel.dart';
 import 'package:mamanike/widget/product_card.dart';
 import 'package:mamanike/widget/search_form.dart';
+import 'package:provider/provider.dart';
 
-class ProductlistScreen extends StatefulWidget {
-  final Map<String, dynamic>? data;
+class ProductlistScreen extends HookWidget {
+  final Map<String, dynamic> data;
   const ProductlistScreen({Key? key, required this.data}) : super(key: key);
 
   @override
-  _ProductlistScreenState createState() => _ProductlistScreenState();
-}
-
-class _ProductlistScreenState extends State<ProductlistScreen> {
-  @override
   Widget build(BuildContext context) {
+    final productViewModel = Provider.of<ProductViewModel>(context);
+    final categoryViewModel = Provider.of<CategoryViewModel>(context);
+
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        productViewModel.fetchProducts(
+            context, categoryViewModel.selectedCategory!['nama_kategori']);
+      });
+      return null;
+    }, []);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -22,7 +32,7 @@ class _ProductlistScreenState extends State<ProductlistScreen> {
         elevation: 1,
         automaticallyImplyLeading: false,
         title: Text(
-          widget.data!['nama_kategori'],
+          categoryViewModel.selectedCategory!['nama_kategori'],
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -44,73 +54,24 @@ class _ProductlistScreenState extends State<ProductlistScreen> {
       ),
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(24),
-            child: SearchForm()
-          ),
+          const Padding(padding: EdgeInsets.all(24), child: SearchForm()),
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('produk')
-                  .where('nama_kategori', isEqualTo: widget.data!['nama_kategori'])
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text("Error: ${snapshot.error}"),
-                  );
-                }
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(
-                    child: Text("Kategori tidak Ditemukan"),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: EdgeInsets.all(8.0),
-                  itemCount: snapshot.data!.docs.length,
+            child: Consumer<ProductViewModel>(
+              builder: (context, productViewModel, child) {
+                return GridView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8.0,
+                    mainAxisSpacing: 8.0,
+                    childAspectRatio: 148 / 205,
+                  ),
+                  itemCount: productViewModel.products.length,
                   itemBuilder: (context, index) {
-                    DocumentSnapshot document = snapshot.data!.docs[index];
-                    return StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('produk')
-                          .doc(document.id)
-                          .collection('list')
-                          .snapshots(),
-                      builder: (context, nestedSnapshot) {
-                        if (nestedSnapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                        if (nestedSnapshot.hasError) {
-                          return Text('Error: ${nestedSnapshot.error}');
-                        }
-                        if (!nestedSnapshot.hasData || nestedSnapshot.data!.docs.isEmpty) {
-                          return Text('Tidak ada Data');
-                        }
-
-                        return GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 8.0,
-                            mainAxisSpacing: 8.0,
-                            childAspectRatio: 148 / 205,
-                          ),
-                          itemCount: nestedSnapshot.data!.docs.length,
-                          itemBuilder: (context, nestedIndex) {
-                            DocumentSnapshot nestedDocument = nestedSnapshot.data!.docs[nestedIndex];
-                            Map<String, dynamic> itemData = nestedDocument.data() as Map<String, dynamic>;
-                            itemData['nama_kategori'] = document['nama_kategori'];
-                            return ProductCard(data: itemData);
-                          },
-                        );
-                      },
+                    return ProductCard(
+                      data: productViewModel.products[index],
                     );
                   },
                 );

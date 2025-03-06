@@ -5,7 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
 import 'package:mamanike/screens/auth/forgotpassword_screen.dart';
 import 'package:mamanike/screens/auth/register_screen.dart';
+import 'package:mamanike/screens/main/main_screen.dart';
 import 'package:mamanike/viewmodel/auth/login_viewmodel.dart';
+import 'package:mamanike/viewmodel/main/main_container_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -14,9 +16,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loginViewModel = Provider.of<LoginViewModel>(context);
-
-    final _emailController = TextEditingController();
-    final _passwordController = TextEditingController();
+    final mainViewModel = Provider.of<MainContainerViewmodel>(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -71,7 +71,7 @@ class LoginScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: TextFormField(
-                      controller: _emailController,
+                      controller: loginViewModel.emailController,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "Email atau Nomor Telepon",
@@ -104,7 +104,7 @@ class LoginScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: TextFormField(
-                      controller: _passwordController,
+                      controller: loginViewModel.passwordController,
                       obscureText: loginViewModel.obscureText,
                       decoration: InputDecoration(
                         border: InputBorder.none,
@@ -120,6 +120,7 @@ class LoginScreen extends StatelessWidget {
                                 : IconlyBold.hide,
                           ),
                           onPressed: () {
+                            mainViewModel.resetIndex();
                             loginViewModel.togglePasswordVisibility();
                           },
                         ),
@@ -165,11 +166,10 @@ class LoginScreen extends StatelessWidget {
                     margin: const EdgeInsets.symmetric(horizontal: 25),
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
+
                         loginViewModel.login(
-                          _emailController.text,
-                          _passwordController.text,
-                          context,
+                          context
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -214,8 +214,7 @@ class LoginScreen extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        RegisterScreen(),
+                                    builder: (context) => RegisterScreen(),
                                   ),
                                 );
                               },

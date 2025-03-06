@@ -8,62 +8,63 @@ import 'package:provider/provider.dart';
 class RegisterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => RegisterViewModel(),
-      child: Consumer<RegisterViewModel>(
-        builder: (context, model, child) {
-          return Scaffold(
-            backgroundColor: Colors.white,
-            body: SafeArea(
-              child: Stack(
+    final model = Provider.of<RegisterViewModel>(context);
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery
+                      .of(context)
+                      .viewInsets
+                      .bottom + 80
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SingleChildScrollView(
-                    padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).viewInsets.bottom + 80
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  SizedBox(
+                    child: Stack(
                       children: [
-                        SizedBox(
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                child: SvgPicture.asset(
-                                  'assets/svg/registerdecor.svg',
-                                  width: MediaQuery.of(context).size.width,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 24),
-                                  _header(context),
-                                  const SizedBox(height: 34),
-                                  _namapengguna(model),
-                                  const SizedBox(height: 12),
-                                  _email(model),
-                                  const SizedBox(height: 12),
-                                  _password(model),
-                                  const SizedBox(height: 12),
-                                  _konfirmasipassword(model),
-                                ],
-                              ),
-                            ],
+                        Positioned(
+                          child: SvgPicture.asset(
+                            'assets/svg/registerdecor.svg',
+                            width: MediaQuery
+                                .of(context)
+                                .size
+                                .width,
+                            fit: BoxFit.cover,
                           ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 24),
+                            _header(context),
+                            const SizedBox(height: 34),
+                            _namapengguna(model),
+                            const SizedBox(height: 12),
+                            _email(model),
+                            const SizedBox(height: 12),
+                            _password(model),
+                            const SizedBox(height: 12),
+                            _konfirmasipassword(model),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: _button(context, model),
-                  ),
                 ],
               ),
             ),
-          );
-        },
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: _button(context, model),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -76,28 +77,30 @@ class RegisterScreen extends StatelessWidget {
         onPressed: model.isFormFilled() ? () => model.register(context) : null,
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          backgroundColor: model.isFormFilled() ? const Color(0xFFFFB113) : Colors.grey,
+          backgroundColor: model.isFormFilled()
+              ? const Color(0xFFFFB113)
+              : Colors.grey,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
         ),
         child: model.isLoading
-          ? const SizedBox(
-              height: 24, width: 24,
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation(Colors.white), 
-                strokeWidth: 2,
-              )
+            ? const SizedBox(
+            height: 24, width: 24,
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(Colors.white),
+              strokeWidth: 2,
             )
-          : Text(
-              'Daftar',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
+        )
+            : Text(
+          'Daftar',
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
@@ -159,7 +162,8 @@ class RegisterScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        if (model.confirmObscureText && model.confirmPasswordController.text != model.passwordController.text) ...{
+        if (model.confirmObscureText && model.confirmPasswordController.text !=
+            model.passwordController.text) ...{
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Row(
@@ -340,6 +344,7 @@ class RegisterScreen extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 28,
               fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 6),
@@ -347,7 +352,7 @@ class RegisterScreen extends StatelessWidget {
             'Silakan daftarkan akun anda untuk melanjutkan',
             style: GoogleFonts.poppins(
               fontSize: 14,
-              color: const Color(0xFF9E9E9E),
+              color: Colors.white,
             ),
           ),
         ],
@@ -355,3 +360,4 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 }
+

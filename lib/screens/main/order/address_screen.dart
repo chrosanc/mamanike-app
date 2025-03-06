@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mamanike/viewmodel/main/order/order_viewmodel.dart';
 import 'package:mamanike/widget/CustomAlert.dart';
 import 'package:mamanike/widget/address_card.dart';
 import 'package:mamanike/widget/button.dart';
 import 'package:mamanike/screens/main/order/detailaddress_screen.dart';
 import 'package:mamanike/service/database_service.dart';
 import 'package:cherry_toast/cherry_toast.dart';
+import 'package:provider/provider.dart';
 
 class AddressScreen extends StatefulWidget {
   final Map<String, dynamic>? data;
@@ -29,14 +31,10 @@ class _AddressScreenState extends State<AddressScreen> {
     _addressesStream = _service.addressesStream;
   }
 
-  @override
-  void dispose() {
-    _service.stopAddressStream();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<OrderViewModel>(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -157,6 +155,7 @@ class _AddressScreenState extends State<AddressScreen> {
             text: 'Pilih Alamat',
             onPressed: () {
               if (addressData != null) {
+                viewModel.saveDelivery(addressData!);
                 Navigator.pop(context, addressData);
               } else {
                 CherryToast.warning(

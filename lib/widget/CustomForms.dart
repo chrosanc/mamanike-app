@@ -4,12 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 class CustomForms extends StatelessWidget {
 
   final String title;
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final Function(String)? onChanged;
   final String? hintText;
   final TextInputType? keyboardType;
 
-const CustomForms({ Key? key, required this.title, required this.controller , this.onChanged, this.hintText, this.keyboardType}) : super(key: key);
+const CustomForms({ Key? key, required this.title, this.controller , this.onChanged, this.hintText, this.keyboardType}) : super(key: key);
 
   @override
   Widget build(BuildContext context){

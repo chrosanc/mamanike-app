@@ -6,13 +6,13 @@ class CustomDropdown extends StatefulWidget {
   final List<String> items;
   final String value;
   final Function(String?) onChanged;
-  final TextEditingController controller;
+  final TextEditingController? controller;
 
   CustomDropdown({
     required this.items,
     required this.value,
     required this.onChanged,
-    required this.controller,
+    this.controller,
   });
 
   @override

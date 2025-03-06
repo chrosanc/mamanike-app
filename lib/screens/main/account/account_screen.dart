@@ -346,46 +346,49 @@ child: Container(
 
   Card _header() {
     return Card(
-            elevation: 1,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 19),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4)
+      elevation: 1,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 19),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                'assets/images/avatar.png',
+                width: 54,
               ),
-              child: Row(
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.asset('assets/images/avatar.png',
-                    width: 54,
+                  Text(
+                    _name,
+                    maxLines: 2,
+                    softWrap: true,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                      Text(
-                        _name,
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          
-                        ),
-                        ),
-                      Text(
-                        _email,
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.normal,
-                          fontSize: 12
-                        ),
-                        )
-                    ],),
-                  )
+                  Text(
+                    _email,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.normal,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
-          );
+          ],
+        ),
+      ),
+    );
   }
 }

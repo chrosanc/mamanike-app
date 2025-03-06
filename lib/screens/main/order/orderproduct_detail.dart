@@ -33,23 +33,23 @@ class _OrderproductDetailState extends State<OrderproductDetail> {
   return DateFormat('dd MMMM yyyy', 'id_ID').format(date); // You can customize the date format as needed
 }
 
-  _showExtendDurationDialog() {
-    showRentDurationSheet(
-      context: context, 
-      controller: extendDurationController ,
-      onDurationChanged: (value){
-
-      }, 
-      onUnitChanged: (value) {
-
-      }, 
-      selectedUnit: selectedUnit,
-      onSave: (){
-        
-      }
-      );
-      
-  }
+  // _showExtendDurationDialog() {
+  //   showRentDurationSheet(
+  //     context: context,
+  //     controller: extendDurationController ,
+  //     onDurationChanged: (value){
+  //
+  //     },
+  //     onUnitChanged: (value) {
+  //
+  //     },
+  //     selectedUnit: selectedUnit,
+  //     onSave: (){
+  //
+  //     }
+  //     );
+  //
+  // }
 
 
   @override
@@ -485,7 +485,7 @@ class _OrderproductDetailState extends State<OrderproductDetail> {
                     elevation: 0,
                   ),
                   onPressed: () {
-                    _showExtendDurationDialog();
+                    // _showExtendDurationDialog();
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

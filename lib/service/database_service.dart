@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:mamanike/models/Order.dart';
+import 'package:mamanike/models/Product.dart';
 
 class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -74,6 +76,49 @@ Future<List<Map<String, dynamic>>> getAllOrders() async {
 }
 
 
+  Future<int> checkProductStock(String productName, String categoryName) async {
+    try {
+      // Ambil semua kategori dari koleksi "produk"
+      final QuerySnapshot categorySnapshot =
+      await _firestore.collection('produk').get();
+
+      // Cari kategori yang sesuai dengan `categoryName`
+      var categoryDoc = categorySnapshot.docs.firstWhere(
+              (doc) => doc['nama_kategori'] == categoryName,
+          orElse: null);
+
+      if (categoryDoc == null) {
+        print("Kategori tidak ditemukan: $categoryName");
+        return 0;
+      }
+
+      // Ambil subkoleksi "list" di dalam kategori yang ditemukan
+      final QuerySnapshot productSnapshot = await _firestore
+          .collection('produk')
+          .doc(categoryDoc.id) // ID kategori
+          .collection('list')
+          .where('nama', isEqualTo: productName)
+          .get();
+
+      if (productSnapshot.docs.isEmpty) {
+        print("Produk tidak ditemukan: $productName");
+        return 0;
+      }
+
+      // Ambil stok produk pertama yang ditemukan
+      var productData = productSnapshot.docs.first.data() as Map<String, dynamic>;
+
+      if (!productData.containsKey('stok')) {
+        print("Field 'stok' tidak ditemukan di produk");
+        return 0;
+      }
+
+      return productData['stok'] as int;
+    } catch (e) {
+      print("Error Catching product Stock: $e");
+      return 0;
+    }
+  }
 
 
 
@@ -251,7 +296,7 @@ Future<void> orderItem(Map<String, dynamic> deliveryAddress, Map<String, dynamic
     }
   }
 
-  Future<void> reserveItem(String invId, String categoryName, String productName, String productImage, Map<String, dynamic> identityData, File imageFile, String? anotherPersonName, String? anotherPersonNumber) async {
+  Future<void> reserveItem(String invId, ProductItem productData, ContactItem contactData) async {
     try {
       final User? user = _auth.currentUser;
       if (user == null) {
@@ -264,19 +309,19 @@ Future<void> orderItem(Map<String, dynamic> deliveryAddress, Map<String, dynamic
       await _firestore.runTransaction((transaction) async {
         final QuerySnapshot querySnapshot = await _firestore
             .collection('produk')
-            .where('nama_kategori', isEqualTo: categoryName)
+            .where('nama_kategori', isEqualTo: productData.category)
             .get();
 
         final QueryDocumentSnapshot categoryDoc = querySnapshot.docs.firstWhere(
-          (doc) => doc['nama_kategori'] == categoryName,
-          orElse: () => throw Exception('Kategori tidak ditemukan: $categoryName'),
+          (doc) => doc['nama_kategori'] == productData.category,
+          orElse: () => throw Exception('Kategori tidak ditemukan: $productData.category'),
         );
 
         final QuerySnapshot productSnapshot = await _firestore
             .collection('produk')
             .doc(categoryDoc.id)
             .collection('list')
-            .where('nama', isEqualTo: productName)
+            .where('nama', isEqualTo: productData.productName)
             .get();
 
         if (productSnapshot.docs.isEmpty) {
@@ -299,27 +344,19 @@ Future<void> orderItem(Map<String, dynamic> deliveryAddress, Map<String, dynamic
           }
 
           // Upload image to storage
-          await _storage.ref(filePath).putFile(imageFile);
+          await _storage.ref(filePath).putFile(File(contactData.identityImage));
           final String downloadURL = await _storage.ref(filePath).getDownloadURL();
-          identityData['imagePath'] = downloadURL;
+          contactData.identityImage = downloadURL;
 
           final Map<String, dynamic> uidReference = {
             'uid' : uid
           };
 
           final Map<String, dynamic> orderData = {
-            'invId': invId,
-            'identityData': identityData,
-            'anotherPerson' : {
-              'anotherPersonName' : anotherPersonName,
-              'anotherPersonNumber' : anotherPersonNumber,
-            },
+            'invoice_id': invId,
+            'contactData': contactData.toJson(),
+            'productData' : productData.toJson(),
             'status' : 'Dikunci',
-            'productData': {
-              'categoryName': categoryName,
-              'productName': productName,
-              'productImage' : productImage,
-            },
           };
           transaction.set(ordersUID, uidReference);
           transaction.set(ordersCollection.doc(invId), orderData);

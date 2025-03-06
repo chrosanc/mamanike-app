@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mamanike/viewmodel/main/order/order_viewmodel.dart';
 import 'package:mamanike/widget/button.dart';
 import 'package:mamanike/screens/main/order/contact_detail.dart';
+import 'package:provider/provider.dart';
 
 class DetailScreen extends StatefulWidget {
-  final Map<String, dynamic> data;
-  const DetailScreen({Key? key, required this.data}) : super(key: key);
+  const DetailScreen({Key? key}) : super(key: key);
 
   @override
   _DetailScreenState createState() => _DetailScreenState();
@@ -16,12 +17,16 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String categoryName = widget.data['nama_kategori'] as String;
-    final String productName = widget.data['nama'] as String;
-    final int price = widget.data['harga'] as int;
-    final int stock = widget.data['stok'] as int;
-    final String imageUrl = widget.data['gambar'] as String;
-    final String description = widget.data['deskripsi'] as String;
+
+    final viewModel = Provider.of<OrderViewModel>(context);
+    final data = viewModel.selectedProductData;
+
+    final String categoryName = data['nama_kategori'] as String;
+    final String productName = data['nama'] as String;
+    final int price = data['harga'] as int;
+    final int stock = data['stok'] as int;
+    final String imageUrl = data['gambar'] as String;
+    final String description = data['deskripsi'] as String;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -65,9 +70,10 @@ class _DetailScreenState extends State<DetailScreen> {
                 ),
               ),
               CustomButton(
-                text: 'Pesan Sekarang',
+                text: stock != 0 ? 'Pesan Sekarang' : 'Belum Tersedia',
+                isEnabled: stock != 0 ,
                 onPressed: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ContactDetail(data: widget.data)));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ContactDetail()));
                 }
               ),
             ],
